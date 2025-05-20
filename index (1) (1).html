@@ -1,0 +1,1638 @@
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>
+   Vero Couture eCommerce
+  </title>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+  <style>
+   body {
+      font-family: 'Inter', sans-serif;
+      background-color: #000000;
+      color: #e5e7eb; /* Tailwind gray-200 for text on black */
+      background-image: url('94f48c7c-fe98-43b3-a87a-20ffd5068f92.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      z-index: 0;
+    }
+    main, nav, footer {
+      position: relative;
+      z-index: 1;
+    }
+    /* Override some text colors for better contrast on black */
+    nav a, nav button, footer {
+      color: #e5e7eb;
+    }
+    nav a:hover, nav button:hover {
+      color: #a5b4fc; /* Tailwind indigo-300 */
+    }
+    footer {
+      border-color: #374151; /* Tailwind gray-700 */
+    }
+    /* Override backgrounds for white containers to dark */
+    .bg-white {
+      background-color: #111827 !important; /* Tailwind gray-900 */
+      color: #e5e7eb !important;
+    }
+    /* Override shadows for dark background */
+    .shadow {
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.9), 0 1px 2px rgb(0 0 0 / 0.7) !important;
+    }
+    /* Override input backgrounds */
+    input, select, textarea {
+      background-color: #1f2937; /* Tailwind gray-800 */
+      color: #e5e7eb;
+      border-color: #374151; /* Tailwind gray-700 */
+    }
+    input::placeholder, textarea::placeholder {
+      color: #9ca3af; /* Tailwind gray-400 */
+    }
+    input:focus, select:focus, textarea:focus {
+      background-color: #1f2937;
+      color: #e5e7eb;
+      border-color: #6366f1; /* Tailwind indigo-500 */
+      box-shadow: 0 0 0 2px rgb(99 102 241 / 0.5);
+    }
+    /* Override buttons */
+    .bg-indigo-600 {
+      background-color: #6366f1 !important; /* Tailwind indigo-500 */
+    }
+    .bg-indigo-600:hover {
+      background-color: #4f46e5 !important; /* Tailwind indigo-600 */
+    }
+    /* Scrollbar for dark mode */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1f2937;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: #6366f1;
+      border-radius: 10px;
+      border: 2px solid #1f2937;
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js">
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js">
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js">
+  </script>
+  <script src="https://js.stripe.com/v3/">
+  </script>
+ </head>
+ <body class="min-h-screen flex flex-col">
+  <!-- Navbar -->
+  <nav class="shadow sticky top-0 z-50 bg-black">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16 items-center">
+     <a class="text-2xl font-bold text-gray-200" href="#">
+      Vero Couture
+     </a>
+     <div class="hidden md:flex space-x-6 items-center">
+      <a class="text-gray-200 hover:text-indigo-300 font-semibold" href="#home">
+       Home
+      </a>
+      <a class="text-gray-200 hover:text-indigo-300 font-semibold" href="#products">
+       Products
+      </a>
+      <a class="text-gray-200 hover:text-indigo-300 font-semibold relative" href="#cart">
+       <i class="fas fa-shopping-cart text-xl">
+       </i>
+       <span class="absolute -top-2 -right-3 bg-red-600 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center" id="cart-count">
+        0
+       </span>
+      </a>
+      <button class="text-gray-200 hover:text-indigo-300 font-semibold focus:outline-none" id="auth-button">
+      </button>
+     </div>
+     <div class="md:hidden">
+      <button aria-label="Open menu" class="text-gray-200 hover:text-indigo-300 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" id="mobile-menu-button">
+       <i class="fas fa-bars text-2xl">
+       </i>
+      </button>
+     </div>
+    </div>
+   </div>
+   <div class="hidden md:hidden bg-black border-t border-gray-700" id="mobile-menu">
+    <a class="block px-4 py-3 text-gray-200 hover:bg-indigo-900 font-semibold" href="#home">
+     Home
+    </a>
+    <a class="block px-4 py-3 text-gray-200 hover:bg-indigo-900 font-semibold" href="#products">
+     Products
+    </a>
+    <a class="block px-4 py-3 text-gray-200 hover:bg-indigo-900 font-semibold" href="#cart">
+     Cart
+    </a>
+    <button class="w-full text-left px-4 py-3 text-gray-200 hover:bg-indigo-900 font-semibold focus:outline-none" id="mobile-auth-button">
+    </button>
+   </div>
+  </nav>
+  <main class="flex-grow">
+   <!-- Home Page -->
+   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" id="home">
+    <div class="relative rounded-lg overflow-hidden shadow-lg mb-12 bg-black flex flex-col justify-center items-center text-center px-4 py-20">
+      <h1 class="text-white text-3xl sm:text-5xl font-extrabold mb-4">
+       Discover Your Style
+      </h1>
+      <p class="text-white text-lg sm:text-xl max-w-xl mb-6">
+       Trendy, sustainable, and comfortable clothing for every occasion.
+      </p>
+      <a class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-md shadow-md transition" href="#products">
+       Shop Now
+      </a>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
+     <div class="bg-indigo-900 rounded-lg p-6 flex flex-col items-center text-center shadow">
+      <img alt="Icon representing free shipping with a delivery truck and package" class="mb-4 w-16 h-16" height="150" src="https://storage.googleapis.com/a1aa/image/be26a519-24a3-4fe3-68d6-026cb2a75108.jpg" width="150"/>
+      <h3 class="text-lg font-semibold mb-2 text-gray-200">
+       Free Shipping
+      </h3>
+      <p class="text-gray-300">
+       On all orders over $50 within the US.
+      </p>
+     </div>
+     <div class="bg-indigo-900 rounded-lg p-6 flex flex-col items-center text-center shadow">
+      <img alt="Icon representing quality guarantee with a badge and checkmark" class="mb-4 w-16 h-16" height="150" src="https://storage.googleapis.com/a1aa/image/08dd04a2-3e76-443d-2447-02ed176a4afa.jpg" width="150"/>
+      <h3 class="text-lg font-semibold mb-2 text-gray-200">
+       Quality Guarantee
+      </h3>
+      <p class="text-gray-300">
+       Premium fabrics and craftsmanship in every piece.
+      </p>
+     </div>
+     <div class="bg-indigo-900 rounded-lg p-6 flex flex-col items-center text-center shadow">
+      <img alt="Icon representing 24/7 customer support with a headset and chat bubble" class="mb-4 w-16 h-16" height="150" src="https://storage.googleapis.com/a1aa/image/9039f7fe-5064-41be-9f8b-64444d597698.jpg" width="150"/>
+      <h3 class="text-lg font-semibold mb-2 text-gray-200">
+       24/7 Support
+      </h3>
+      <p class="text-gray-300">
+       We're here to help anytime you need us.
+      </p>
+     </div>
+    </div>
+    <h2 class="text-2xl font-bold mb-6 text-gray-200">
+     Featured Products
+    </h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="featured-products">
+      <!-- Featured products -->
+      <div class="bg-gray-900 rounded-lg shadow hover:shadow-lg transition cursor-pointer flex flex-col">
+        <div class="relative">
+          <img src="https://storage.googleapis.com/a1aa/image/be26a519-24a3-4fe3-68d6-026cb2a75108.jpg" alt="VERO COUTURE Classic T-Shirt" class="w-full h-64 object-cover rounded-t-lg"/>
+          <div class="absolute top-2 right-2 bg-indigo-600 text-white px-2 py-1 rounded text-sm">New</div>
+        </div>
+        <div class="p-4 flex flex-col flex-grow">
+          <h3 class="text-lg font-semibold mb-2 text-gray-200">VERO COUTURE Classic T-Shirt</h3>
+          <p class="text-gray-400 text-sm mb-4">Premium cotton t-shirt with elegant VERO COUTURE logo design</p>
+          <p class="text-indigo-400 font-bold text-xl mt-auto">$29.99</p>
+        </div>
+      </div>
+
+      <div class="bg-gray-900 rounded-lg shadow hover:shadow-lg transition cursor-pointer flex flex-col">
+        <div class="relative">
+          <img src="https://storage.googleapis.com/a1aa/image/08dd04a2-3e76-443d-2447-02ed176a4afa.jpg" alt="VERO COUTURE Signature Hoodie" class="w-full h-64 object-cover rounded-t-lg"/>
+          <div class="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded text-sm">Hot</div>
+        </div>
+        <div class="p-4 flex flex-col flex-grow">
+          <h3 class="text-lg font-semibold mb-2 text-gray-200">VERO COUTURE Signature Hoodie</h3>
+          <p class="text-gray-400 text-sm mb-4">Comfortable hoodie featuring the VERO COUTURE signature embroidery</p>
+          <p class="text-indigo-400 font-bold text-xl mt-auto">$49.99</p>
+        </div>
+      </div>
+
+      <div class="bg-gray-900 rounded-lg shadow hover:shadow-lg transition cursor-pointer flex flex-col">
+        <div class="relative">
+          <img src="https://storage.googleapis.com/a1aa/image/9039f7fe-5064-41be-9f8b-64444d597698.jpg" alt="VERO COUTURE Premium Sweatshirt" class="w-full h-64 object-cover rounded-t-lg"/>
+          <div class="absolute top-2 right-2 bg-green-600 text-white px-2 py-1 rounded text-sm">Trending</div>
+        </div>
+        <div class="p-4 flex flex-col flex-grow">
+          <h3 class="text-lg font-semibold mb-2 text-gray-200">VERO COUTURE Premium Sweatshirt</h3>
+          <p class="text-gray-400 text-sm mb-4">Luxurious sweatshirt with minimalist VERO COUTURE branding</p>
+          <p class="text-indigo-400 font-bold text-xl mt-auto">$39.99</p>
+        </div>
+      </div>
+
+      <div class="bg-gray-900 rounded-lg shadow hover:shadow-lg transition cursor-pointer flex flex-col">
+        <div class="relative">
+          <img src="https://storage.googleapis.com/a1aa/image/be26a519-24a3-4fe3-68d6-026cb2a75108.jpg" alt="VERO COUTURE Limited Edition Tee" class="w-full h-64 object-cover rounded-t-lg"/>
+          <div class="absolute top-2 right-2 bg-purple-600 text-white px-2 py-1 rounded text-sm">Limited</div>
+        </div>
+        <div class="p-4 flex flex-col flex-grow">
+          <h3 class="text-lg font-semibold mb-2 text-gray-200">VERO COUTURE Limited Edition Tee</h3>
+          <p class="text-gray-400 text-sm mb-4">Special edition t-shirt with exclusive VERO COUTURE artwork</p>
+          <p class="text-indigo-400 font-bold text-xl mt-auto">$34.99</p>
+        </div>
+      </div>
+    </div>
+   </section>
+   <!-- Product Listing Page -->
+   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" id="products">
+    <h2 class="text-3xl font-bold mb-6 text-gray-200">
+     All Products
+    </h2>
+    <div class="flex flex-col md:flex-row md:space-x-6">
+     <aside class="w-full md:w-64 mb-6 md:mb-0 rounded-lg shadow p-4 bg-gray-900">
+      <h3 class="font-semibold text-lg mb-4 text-gray-200">
+       Filters
+      </h3>
+      <div class="mb-6">
+       <label class="block font-medium mb-2 text-gray-300" for="filter-category">
+        Category
+       </label>
+       <select class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="filter-category">
+        <option value="">
+         All
+        </option>
+        <option value="men">
+         Men
+        </option>
+        <option value="women">
+         Women
+        </option>
+        <option value="kids">
+         Kids
+        </option>
+        <option value="accessories">
+         Accessories
+        </option>
+       </select>
+      </div>
+      <div class="mb-6">
+       <label class="block font-medium mb-2 text-gray-300" for="filter-price">
+        Price Range
+       </label>
+       <select class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="filter-price">
+        <option value="">
+         All
+        </option>
+        <option value="0-25">
+         $0 - $25
+        </option>
+        <option value="26-50">
+         $26 - $50
+        </option>
+        <option value="51-100">
+         $51 - $100
+        </option>
+        <option value="101-9999">
+         $101+
+        </option>
+       </select>
+      </div>
+      <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-md transition" id="filter-reset">
+       Reset Filters
+      </button>
+     </aside>
+     <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div class="col-span-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="product-list">
+        <!-- Basic Text Design -->
+        <div class="bg-gray-900 rounded-lg shadow hover:shadow-lg transition cursor-pointer flex flex-col">
+          <div class="relative">
+            <div class="w-full h-64 bg-gray-800 rounded-t-lg flex items-center justify-center">
+              <p class="text-2xl font-bold text-white">VERO COUTURE</p>
+            </div>
+            <div class="absolute top-2 right-2 bg-indigo-600 text-white px-2 py-1 rounded text-sm">Basic</div>
+          </div>
+          <div class="p-4 flex flex-col flex-grow">
+            <h3 class="text-lg font-semibold mb-2 text-gray-200">Classic Text T-Shirt</h3>
+            <p class="text-gray-400 text-sm mb-4">Simple, elegant VERO COUTURE text design</p>
+            <p class="text-indigo-400 font-bold text-xl mt-auto">$24.99</p>
+          </div>
+        </div>
+
+        <!-- Stylized Text Design -->
+        <div class="bg-gray-900 rounded-lg shadow hover:shadow-lg transition cursor-pointer flex flex-col">
+          <div class="relative">
+            <div class="w-full h-64 bg-gray-800 rounded-t-lg flex items-center justify-center">
+              <p class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500" style="font-family: 'Inter', sans-serif;">VERO<br>COUTURE</p>
+            </div>
+            <div class="absolute top-2 right-2 bg-purple-600 text-white px-2 py-1 rounded text-sm">Premium</div>
+          </div>
+          <div class="p-4 flex flex-col flex-grow">
+            <h3 class="text-lg font-semibold mb-2 text-gray-200">Gradient Text T-Shirt</h3>
+            <p class="text-gray-400 text-sm mb-4">Stylish gradient VERO COUTURE design</p>
+            <p class="text-indigo-400 font-bold text-xl mt-auto">$29.99</p>
+          </div>
+        </div>
+
+        <!-- Minimalist Design -->
+        <div class="bg-gray-900 rounded-lg shadow hover:shadow-lg transition cursor-pointer flex flex-col">
+          <div class="relative">
+            <div class="w-full h-64 bg-gray-800 rounded-t-lg flex items-center justify-center">
+              <p class="text-xl font-light text-white tracking-widest">VERO<br><span class="text-2xl font-bold">COUTURE</span></p>
+            </div>
+            <div class="absolute top-2 right-2 bg-gray-600 text-white px-2 py-1 rounded text-sm">Minimal</div>
+          </div>
+          <div class="p-4 flex flex-col flex-grow">
+            <h3 class="text-lg font-semibold mb-2 text-gray-200">Minimalist Text T-Shirt</h3>
+            <p class="text-gray-400 text-sm mb-4">Clean, minimalist VERO COUTURE typography</p>
+            <p class="text-indigo-400 font-bold text-xl mt-auto">$27.99</p>
+          </div>
+        </div>
+
+        <!-- Artistic Design -->
+        <div class="bg-gray-900 rounded-lg shadow hover:shadow-lg transition cursor-pointer flex flex-col">
+          <div class="relative">
+            <div class="w-full h-64 bg-gray-800 rounded-t-lg flex items-center justify-center">
+              <div class="text-center">
+                <p class="text-4xl font-black text-white transform -rotate-12">VERO</p>
+                <p class="text-3xl font-black text-indigo-400 transform rotate-12">COUTURE</p>
+              </div>
+            </div>
+            <div class="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded text-sm">Artistic</div>
+          </div>
+          <div class="p-4 flex flex-col flex-grow">
+            <h3 class="text-lg font-semibold mb-2 text-gray-200">Artistic Text T-Shirt</h3>
+            <p class="text-gray-400 text-sm mb-4">Creative VERO COUTURE text arrangement</p>
+            <p class="text-indigo-400 font-bold text-xl mt-auto">$32.99</p>
+          </div>
+        </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <!-- Product Detail Page -->
+   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 hidden" id="product-detail">
+    <button class="mb-6 text-indigo-400 hover:text-indigo-600 font-semibold flex items-center space-x-2 focus:outline-none" id="back-to-products">
+     <i class="fas fa-arrow-left">
+     </i>
+     <span>
+      Back to Products
+     </span>
+    </button>
+    <div class="flex flex-col md:flex-row md:space-x-10">
+     <div class="md:w-1/2">
+      <div class="mb-6" id="product-images">
+       <!-- Product images carousel -->
+      </div>
+     </div>
+     <div class="md:w-1/2 rounded-lg shadow p-6 flex flex-col bg-gray-900">
+      <h1 class="text-3xl font-bold mb-4 text-gray-200" id="product-title">
+      </h1>
+      <p class="text-gray-300 mb-6" id="product-description">
+      </p>
+      <div class="mb-4">
+       <span class="text-2xl font-semibold text-indigo-400" id="product-price">
+       </span>
+      </div>
+      <form class="flex flex-col space-y-4" id="product-options-form">
+       <div>
+        <label class="block font-medium mb-1 text-gray-300" for="size-select">
+         Size
+        </label>
+        <select class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="size-select" required="">
+         <!-- Sizes dynamically inserted -->
+        </select>
+       </div>
+       <div>
+        <label class="block font-medium mb-1 text-gray-300" for="color-select">
+         Color
+        </label>
+        <select class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="color-select" required="">
+         <!-- Colors dynamically inserted -->
+        </select>
+       </div>
+       <div>
+        <label class="block font-medium mb-1 text-gray-300" for="quantity-input">
+         Quantity
+        </label>
+        <input class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="quantity-input" min="1" type="number" value="1"/>
+       </div>
+       <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-md shadow-md transition" type="submit">
+        Add to Cart
+       </button>
+      </form>
+     </div>
+    </div>
+   </section>
+   <!-- Shopping Cart Page -->
+   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 hidden" id="cart">
+    <h2 class="text-3xl font-bold mb-6 text-gray-200">
+     Shopping Cart
+    </h2>
+    <div class="rounded-lg shadow p-6 bg-gray-900">
+     <div class="space-y-6" id="cart-items">
+      <!-- Cart items dynamically inserted here -->
+     </div>
+     <div class="mt-8 flex flex-col sm:flex-row sm:justify-between items-center">
+      <div class="text-xl font-semibold text-indigo-400" id="cart-total">
+       Total: $0.00
+      </div>
+      <button class="mt-4 sm:mt-0 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-md shadow-md transition" id="checkout-button">
+       Proceed to Checkout
+      </button>
+     </div>
+    </div>
+   </section>
+   <!-- Checkout Page -->
+   <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10 hidden" id="checkout">
+    <h2 class="text-3xl font-bold mb-6 text-gray-200">
+     Checkout
+    </h2>
+    <form class="rounded-lg shadow p-6 space-y-6 bg-gray-900" id="checkout-form">
+     <fieldset>
+      <legend class="text-xl font-semibold mb-4 text-gray-200">
+       User Details
+      </legend>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+       <div>
+        <label class="block font-medium mb-1 text-gray-300" for="first-name">
+         First Name
+        </label>
+        <input class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="first-name" name="firstName" required="" type="text"/>
+       </div>
+       <div>
+        <label class="block font-medium mb-1 text-gray-300" for="last-name">
+         Last Name
+        </label>
+        <input class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="last-name" name="lastName" required="" type="text"/>
+       </div>
+       <div class="sm:col-span-2">
+        <label class="block font-medium mb-1 text-gray-300" for="email">
+         Email
+        </label>
+        <input class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="email" name="email" required="" type="email"/>
+       </div>
+      </div>
+     </fieldset>
+     <fieldset>
+      <legend class="text-xl font-semibold mb-4 text-gray-200">
+       Shipping Address
+      </legend>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+       <div class="sm:col-span-2">
+        <label class="block font-medium mb-1 text-gray-300" for="address">
+         Address
+        </label>
+        <input class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="address" name="address" required="" type="text"/>
+       </div>
+       <div>
+        <label class="block font-medium mb-1 text-gray-300" for="city">
+         City
+        </label>
+        <input class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="city" name="city" required="" type="text"/>
+       </div>
+       <div>
+        <label class="block font-medium mb-1 text-gray-300" for="state">
+         State/Province
+        </label>
+        <input class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="state" name="state" required="" type="text"/>
+       </div>
+       <div>
+        <label class="block font-medium mb-1 text-gray-300" for="zip">
+         ZIP/Postal Code
+        </label>
+        <input class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="zip" name="zip" required="" type="text"/>
+       </div>
+       <div>
+        <label class="block font-medium mb-1 text-gray-300" for="country">
+         Country
+        </label>
+        <select class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="country" name="country" required="">
+         <option value="">
+          Select Country
+         </option>
+         <option value="US">
+          United States
+         </option>
+         <option value="CA">
+          Canada
+         </option>
+         <option value="GB">
+          United Kingdom
+         </option>
+         <option value="AU">
+          Australia
+         </option>
+         <option value="DE">
+          Germany
+         </option>
+         <option value="FR">
+          France
+         </option>
+         <option value="JP">
+          Japan
+         </option>
+         <option value="IN">
+          India
+         </option>
+         <option value="BR">
+          Brazil
+         </option>
+         <option value="ZA">
+          South Africa
+         </option>
+        </select>
+       </div>
+      </div>
+     </fieldset>
+     <fieldset>
+      <legend class="text-xl font-semibold mb-4 text-gray-200">
+       Payment Method
+      </legend>
+      <div class="space-y-4 text-gray-200">
+       <label class="inline-flex items-center">
+        <input checked="" class="form-radio text-indigo-600" name="paymentMethod" type="radio" value="card"/>
+        <span class="ml-2">
+         Credit/Debit Card
+        </span>
+       </label>
+       <label class="inline-flex items-center">
+        <input class="form-radio text-indigo-600" name="paymentMethod" type="radio" value="paypal"/>
+        <span class="ml-2">
+         PayPal
+        </span>
+       </label>
+      </div>
+      <div class="mt-4" id="card-element">
+      </div>
+      <div class="text-red-600 mt-2" id="card-errors" role="alert">
+      </div>
+     </fieldset>
+     <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-md shadow-md transition" type="submit">
+      Complete Purchase
+     </button>
+    </form>
+   </section>
+   <!-- Authentication Modal -->
+   <div class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 hidden" id="auth-modal">
+    <div class="rounded-lg shadow-lg max-w-md w-full p-6 relative bg-gray-900 text-gray-200">
+     <button aria-label="Close authentication modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-100 focus:outline-none" id="auth-close">
+      <i class="fas fa-times text-xl">
+      </i>
+     </button>
+     <div id="auth-forms">
+      <!-- Login Form -->
+      <form class="space-y-6" id="login-form">
+       <h3 class="text-2xl font-bold mb-4 text-center">
+        Login
+       </h3>
+       <div>
+        <label class="block font-medium mb-1" for="login-email">
+         Email
+        </label>
+        <input class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="login-email" required="" type="email"/>
+       </div>
+       <div>
+        <label class="block font-medium mb-1" for="login-password">
+         Password
+        </label>
+        <input class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="login-password" required="" type="password"/>
+       </div>
+       <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-md shadow-md transition" type="submit">
+        Login
+       </button>
+       <p class="text-center mt-4 text-gray-400">
+        Don't have an account?
+        <button class="text-indigo-400 hover:text-indigo-600 font-semibold focus:outline-none" id="show-signup" type="button">
+         Sign Up
+        </button>
+       </p>
+       <p class="text-center mt-2">
+        <button class="text-indigo-400 hover:text-indigo-600 font-semibold focus:outline-none" id="show-reset" type="button">
+         Forgot Password?
+        </button>
+       </p>
+      </form>
+      <!-- Sign Up Form -->
+      <form class="space-y-6 hidden" id="signup-form">
+       <h3 class="text-2xl font-bold mb-4 text-center">
+        Sign Up
+       </h3>
+       <div>
+        <label class="block font-medium mb-1" for="signup-email">
+         Email
+        </label>
+        <input class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="signup-email" required="" type="email"/>
+       </div>
+       <div>
+        <label class="block font-medium mb-1" for="signup-password">
+         Password
+        </label>
+        <input class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="signup-password" required="" type="password"/>
+       </div>
+       <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-md shadow-md transition" type="submit">
+        Create Account
+       </button>
+       <p class="text-center mt-4 text-gray-400">
+        Already have an account?
+        <button class="text-indigo-400 hover:text-indigo-600 font-semibold focus:outline-none" id="show-login" type="button">
+         Login
+        </button>
+       </p>
+      </form>
+      <!-- Password Reset Form -->
+      <form class="space-y-6 hidden" id="reset-form">
+       <h3 class="text-2xl font-bold mb-4 text-center">
+        Reset Password
+       </h3>
+       <div>
+        <label class="block font-medium mb-1" for="reset-email">
+         Email
+        </label>
+        <input class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="reset-email" required="" type="email"/>
+       </div>
+       <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-md shadow-md transition" type="submit">
+        Send Reset Link
+       </button>
+       <p class="text-center mt-4 text-gray-400">
+        Remembered your password?
+        <button class="text-indigo-400 hover:text-indigo-600 font-semibold focus:outline-none" id="show-login-from-reset" type="button">
+         Login
+        </button>
+       </p>
+      </form>
+     </div>
+    </div>
+   </div>
+   <!-- Admin Panel (Optional) -->
+   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 hidden" id="admin-panel">
+    <h2 class="text-3xl font-bold mb-6 text-gray-200">
+     Admin Panel
+    </h2>
+    <div class="rounded-lg shadow p-6 bg-gray-900">
+     <h3 class="text-xl font-semibold mb-4 text-gray-200">
+      Add / Edit Product
+     </h3>
+     <form class="space-y-6" id="admin-product-form">
+      <input id="admin-product-id" type="hidden"/>
+      <div>
+       <label class="block font-medium mb-1 text-gray-300" for="admin-product-name">
+        Product Name
+       </label>
+       <input class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="admin-product-name" required="" type="text"/>
+      </div>
+      <div>
+       <label class="block font-medium mb-1 text-gray-300" for="admin-product-description">
+        Description
+       </label>
+       <textarea class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="admin-product-description" required="" rows="3"></textarea>
+      </div>
+      <div>
+       <label class="block font-medium mb-1 text-gray-300" for="admin-product-price">
+        Price (USD)
+       </label>
+       <input class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="admin-product-price" min="0" required="" step="0.01" type="number"/>
+      </div>
+      <div>
+       <label class="block font-medium mb-1 text-gray-300" for="admin-product-category">
+        Category
+       </label>
+       <select class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="admin-product-category" required="">
+        <option value="">
+         Select Category
+        </option>
+        <option value="men">
+         Men
+        </option>
+        <option value="women">
+         Women
+        </option>
+        <option value="kids">
+         Kids
+        </option>
+        <option value="accessories">
+         Accessories
+        </option>
+       </select>
+      </div>
+      <div>
+       <label class="block font-medium mb-1 text-gray-300" for="admin-product-sizes">
+        Available Sizes (comma separated)
+       </label>
+       <input class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="admin-product-sizes" placeholder="S, M, L, XL" required="" type="text"/>
+      </div>
+      <div>
+       <label class="block font-medium mb-1 text-gray-300" for="admin-product-colors">
+        Available Colors (comma separated)
+       </label>
+       <input class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="admin-product-colors" placeholder="Red, Blue, Black" required="" type="text"/>
+      </div>
+      <div>
+       <label class="block font-medium mb-1 text-gray-300" for="admin-product-images">
+        Image URLs (comma separated)
+       </label>
+       <input class="w-full border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-200" id="admin-product-images" placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg" required="" type="text"/>
+      </div>
+      <div class="flex space-x-4">
+       <button class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-md shadow-md transition" type="submit">
+        Save Product
+       </button>
+       <button class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-md shadow-md transition hidden" id="admin-product-delete" type="button">
+        Delete Product
+       </button>
+      </div>
+     </form>
+     <hr class="my-8 border-gray-700"/>
+     <h3 class="text-xl font-semibold mb-4 text-gray-200">
+      Product List
+     </h3>
+     <div class="space-y-4 max-h-96 overflow-y-auto" id="admin-product-list">
+      <!-- Admin product list dynamically inserted here -->
+     </div>
+    </div>
+   </section>
+  </main>
+  <footer class="border-t border-gray-700 py-6 mt-12 text-center text-gray-400 text-sm">
+   © 2024 Vero Couture. All rights reserved.
+  </footer>
+  <script>
+   // Firebase config - replace with your own config
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID",
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Stripe setup
+    let stripe = null;
+    let cardElement = null;
+    let cardErrors = null;
+
+    // State
+    let products = [];
+    let featuredProducts = [];
+    let cart = {};
+    let currentUser = null;
+    let currentProduct = null;
+    let isAdmin = false;
+
+    // DOM Elements
+    const featuredProductsContainer = document.getElementById('featured-products');
+    const productListContainer = document.getElementById('product-list');
+    const cartCount = document.getElementById('cart-count');
+    const authButton = document.getElementById('auth-button');
+    const mobileAuthButton = document.getElementById('mobile-auth-button');
+    const authModal = document.getElementById('auth-modal');
+    const authClose = document.getElementById('auth-close');
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    const resetForm = document.getElementById('reset-form');
+    const showSignupBtn = document.getElementById('show-signup');
+    const showLoginBtn = document.getElementById('show-login');
+    const showResetBtn = document.getElementById('show-reset');
+    const showLoginFromResetBtn = document.getElementById('show-login-from-reset');
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const backToProductsBtn = document.getElementById('back-to-products');
+    const productDetailSection = document.getElementById('product-detail');
+    const homeSection = document.getElementById('home');
+    const productsSection = document.getElementById('products');
+    const cartSection = document.getElementById('cart');
+    const checkoutSection = document.getElementById('checkout');
+    const adminPanelSection = document.getElementById('admin-panel');
+    const productImagesContainer = document.getElementById('product-images');
+    const productTitle = document.getElementById('product-title');
+    const productDescription = document.getElementById('product-description');
+    const productPrice = document.getElementById('product-price');
+    const sizeSelect = document.getElementById('size-select');
+    const colorSelect = document.getElementById('color-select');
+    const quantityInput = document.getElementById('quantity-input');
+    const productOptionsForm = document.getElementById('product-options-form');
+    const cartItemsContainer = document.getElementById('cart-items');
+    const cartTotal = document.getElementById('cart-total');
+    const checkoutButton = document.getElementById('checkout-button');
+    const checkoutForm = document.getElementById('checkout-form');
+    const filterCategory = document.getElementById('filter-category');
+    const filterPrice = document.getElementById('filter-price');
+    const filterReset = document.getElementById('filter-reset');
+    const adminProductForm = document.getElementById('admin-product-form');
+    const adminProductIdInput = document.getElementById('admin-product-id');
+    const adminProductNameInput = document.getElementById('admin-product-name');
+    const adminProductDescriptionInput = document.getElementById('admin-product-description');
+    const adminProductPriceInput = document.getElementById('admin-product-price');
+    const adminProductCategorySelect = document.getElementById('admin-product-category');
+    const adminProductSizesInput = document.getElementById('admin-product-sizes');
+    const adminProductColorsInput = document.getElementById('admin-product-colors');
+    const adminProductImagesInput = document.getElementById('admin-product-images');
+    const adminProductDeleteBtn = document.getElementById('admin-product-delete');
+    const adminProductList = document.getElementById('admin-product-list');
+
+    // Mobile menu toggle
+    mobileMenuButton.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // Authentication modal toggle
+    function openAuthModal() {
+      authModal.classList.remove('hidden');
+      showLoginForm();
+    }
+    function closeAuthModal() {
+      authModal.classList.add('hidden');
+    }
+    authClose.addEventListener('click', closeAuthModal);
+
+    // Show login/signup/reset forms
+    function showLoginForm() {
+      loginForm.classList.remove('hidden');
+      signupForm.classList.add('hidden');
+      resetForm.classList.add('hidden');
+    }
+    function showSignupForm() {
+      loginForm.classList.add('hidden');
+      signupForm.classList.remove('hidden');
+      resetForm.classList.add('hidden');
+    }
+    function showResetForm() {
+      loginForm.classList.add('hidden');
+      signupForm.classList.add('hidden');
+      resetForm.classList.remove('hidden');
+    }
+    showSignupBtn.addEventListener('click', showSignupForm);
+    showLoginBtn.addEventListener('click', showLoginForm);
+    showResetBtn.addEventListener('click', showResetForm);
+    showLoginFromResetBtn.addEventListener('click', showLoginForm);
+
+    // Auth button click
+    authButton.addEventListener('click', () => {
+      if (currentUser) {
+        auth.signOut();
+      } else {
+        openAuthModal();
+      }
+    });
+    mobileAuthButton.addEventListener('click', () => {
+      if (currentUser) {
+        auth.signOut();
+      } else {
+        openAuthModal();
+        mobileMenu.classList.add('hidden');
+      }
+    });
+
+    // Update auth button text
+    function updateAuthButtons() {
+      if (currentUser) {
+        authButton.textContent = 'Logout';
+        mobileAuthButton.textContent = 'Logout';
+      } else {
+        authButton.textContent = 'Login';
+        mobileAuthButton.textContent = 'Login';
+      }
+    }
+
+    // Load products from Firestore
+    async function loadProducts() {
+      // Initialize with default products if Firestore is not set up
+      const defaultProducts = [
+        {
+          id: '1',
+          name: 'TO THINE OWN SELF BE TRUE Tee',
+          description: 'Where authenticity meets elegance - VERO COUTURE signature design',
+          price: 34.99,
+          category: 'men',
+          sizes: ['S', 'M', 'L', 'XL'],
+          colors: ['Black'],
+          featured: true,
+          textDesign: {
+            type: 'signature',
+            html: `
+              <div class="relative w-full h-full flex items-center justify-center">
+                <div class="absolute left-12 top-1/2 -translate-y-1/2">
+                  <div class="text-2xl font-bold text-white" style="writing-mode: vertical-lr; transform: rotate(180deg);">
+                    TO<br>THINE<br>OWN<br>SELF<br>BE<br>TRUE
+                  </div>
+                </div>
+                <div class="absolute bottom-6 left-6">
+                  <div class="text-sm text-white">
+                    VERO COUTURE<br>
+                    <span class="text-xs italic">"Where authenticity meets elegance"</span>
+                  </div>
+                </div>
+              </div>
+            `
+          }
+        }
+      ];
+
+      products = defaultProducts;
+      try {
+        // Try to load from Firestore if available
+        const snapshot = await db.collection('products').get();
+        if (snapshot.docs.length > 0) {
+          const firestoreProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          // Only use Firestore products if we successfully got them
+          if (firestoreProducts.length > 0) {
+            products = firestoreProducts;
+          }
+        }
+      } catch (error) {
+        console.log('Using default products:', error);
+      }
+
+      featuredProducts = products;
+      renderFeaturedProducts();
+      renderProductList();
+      if (isAdmin) renderAdminProductList();
+    }
+
+    // Render product list
+    function renderProductList() {
+      productListContainer.innerHTML = '';
+      let filtered = [...products];
+      const category = filterCategory.value;
+      const priceRange = filterPrice.value;
+
+      if (category) {
+        filtered = filtered.filter(p => p.category === category);
+      }
+      if (priceRange) {
+        const [min, max] = priceRange.split('-').map(Number);
+        filtered = filtered.filter(p => p.price >= min && p.price <= max);
+      }
+
+      if (filtered.length === 0) {
+        const noProducts = document.createElement('p');
+        noProducts.className = 'text-gray-400 col-span-full text-center py-8';
+        noProducts.textContent = 'No products found matching the selected filters.';
+        productListContainer.appendChild(noProducts);
+        return;
+      }
+
+      filtered.forEach(product => {
+        const card = document.createElement('div');
+        card.className = 'bg-gray-900 rounded-lg shadow hover:shadow-lg transition cursor-pointer flex flex-col';
+        
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'relative';
+        
+        const designContainer = document.createElement('div');
+        designContainer.className = 'w-full h-64 bg-black rounded-t-lg relative';
+        
+        if (product.textDesign && product.textDesign.html) {
+          designContainer.innerHTML = product.textDesign.html;
+        }
+        
+        imageContainer.appendChild(designContainer);
+        
+        const badge = document.createElement('div');
+        badge.className = 'absolute top-2 right-2 bg-indigo-600 text-white px-2 py-1 rounded text-sm';
+        badge.textContent = product.textDesign?.type || 'New';
+        imageContainer.appendChild(badge);
+        
+        card.appendChild(imageContainer);
+        
+        const content = document.createElement('div');
+        content.className = 'p-4 flex flex-col flex-grow';
+        
+        const name = document.createElement('h3');
+        name.className = 'text-lg font-semibold mb-2 text-gray-200';
+        name.textContent = product.name;
+        
+        const description = document.createElement('p');
+        description.className = 'text-gray-400 text-sm mb-4';
+        description.textContent = product.description;
+        
+        const price = document.createElement('p');
+        price.className = 'text-indigo-400 font-bold text-xl mt-auto';
+        price.textContent = `$${product.price.toFixed(2)}`;
+        
+        content.appendChild(name);
+        content.appendChild(description);
+        content.appendChild(price);
+        card.appendChild(content);
+        
+        card.addEventListener('click', () => openProductDetail(product.id));
+        productListContainer.appendChild(card);
+      });
+    }
+
+    // Render featured products on home page
+    function renderFeaturedProducts() {
+      featuredProductsContainer.innerHTML = '';
+      featuredProducts.forEach(product => {
+        const card = document.createElement('div');
+        card.className = 'bg-gray-900 rounded-lg shadow hover:shadow-lg transition cursor-pointer flex flex-col';
+        
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'relative';
+        
+        const designContainer = document.createElement('div');
+        designContainer.className = 'w-full h-64 bg-black rounded-t-lg relative';
+        
+        if (product.textDesign && product.textDesign.html) {
+          designContainer.innerHTML = product.textDesign.html;
+        }
+        
+        imageContainer.appendChild(designContainer);
+        
+        const badge = document.createElement('div');
+        badge.className = 'absolute top-2 right-2 bg-indigo-600 text-white px-2 py-1 rounded text-sm';
+        badge.textContent = product.textDesign?.type || 'New';
+        imageContainer.appendChild(badge);
+        
+        card.appendChild(imageContainer);
+        
+        const content = document.createElement('div');
+        content.className = 'p-4 flex flex-col flex-grow';
+        
+        const name = document.createElement('h3');
+        name.className = 'text-lg font-semibold mb-2 text-gray-200';
+        name.textContent = product.name;
+        
+        const description = document.createElement('p');
+        description.className = 'text-gray-400 text-sm mb-4';
+        description.textContent = product.description;
+        
+        const price = document.createElement('p');
+        price.className = 'text-indigo-400 font-bold text-xl mt-auto';
+        price.textContent = `$${product.price.toFixed(2)}`;
+        
+        content.appendChild(name);
+        content.appendChild(description);
+        content.appendChild(price);
+        card.appendChild(content);
+        
+        card.addEventListener('click', () => openProductDetail(product.id));
+        featuredProductsContainer.appendChild(card);
+      });
+    }
+
+    // Open product detail page
+    async function openProductDetail(productId) {
+      currentProduct = products.find(p => p.id === productId);
+      if (!currentProduct) return;
+
+      // Hide other sections
+      homeSection.classList.add('hidden');
+      productsSection.classList.add('hidden');
+      cartSection.classList.add('hidden');
+      checkoutSection.classList.add('hidden');
+      adminPanelSection.classList.add('hidden');
+      productDetailSection.classList.remove('hidden');
+
+      // Populate product detail
+      productTitle.textContent = currentProduct.name;
+      productDescription.textContent = currentProduct.description;
+      productPrice.textContent = `$${currentProduct.price.toFixed(2)}`;
+
+      // Product design display
+      productImagesContainer.innerHTML = '';
+      const designContainer = document.createElement('div');
+      designContainer.className = 'w-full h-96 bg-black rounded-lg relative mb-4';
+      
+      if (currentProduct.textDesign && currentProduct.textDesign.html) {
+        designContainer.innerHTML = currentProduct.textDesign.html;
+      }
+      
+      productImagesContainer.appendChild(designContainer);
+
+      // Populate size options
+      sizeSelect.innerHTML = '';
+      if (currentProduct.sizes && currentProduct.sizes.length > 0) {
+        currentProduct.sizes.forEach(size => {
+          const option = document.createElement('option');
+          option.value = size;
+          option.textContent = size;
+          sizeSelect.appendChild(option);
+        });
+      }
+
+      // Populate color options
+      colorSelect.innerHTML = '';
+      if (currentProduct.colors && currentProduct.colors.length > 0) {
+        currentProduct.colors.forEach(color => {
+          const option = document.createElement('option');
+          option.value = color;
+          option.textContent = color;
+          colorSelect.appendChild(option);
+        });
+      }
+
+      quantityInput.value = 1;
+    }
+
+    backToProductsBtn.addEventListener('click', () => {
+      productDetailSection.classList.add('hidden');
+      homeSection.classList.remove('hidden');
+      productsSection.classList.remove('hidden');
+      cartSection.classList.add('hidden');
+      checkoutSection.classList.add('hidden');
+      adminPanelSection.classList.add('hidden');
+      currentProduct = null;
+    });
+
+    // Add to cart handler
+    productOptionsForm.addEventListener('submit', e => {
+      e.preventDefault();
+      if (!currentProduct) return;
+
+      const size = sizeSelect.value;
+      const color = colorSelect.value;
+      const quantity = parseInt(quantityInput.value);
+      if (!size || !color || quantity < 1) {
+        alert('Please select size, color and quantity.');
+        return;
+      }
+
+      const cartKey = `${currentProduct.id}_${size}_${color}`;
+      if (cart[cartKey]) {
+        cart[cartKey].quantity += quantity;
+      } else {
+        cart[cartKey] = {
+          productId: currentProduct.id,
+          name: currentProduct.name,
+          price: currentProduct.price,
+          size,
+          color,
+          quantity,
+          image: currentProduct.images && currentProduct.images.length > 0 ? currentProduct.images[0] : 'https://placehold.co/400x400/png?text=No+Image',
+        };
+      }
+      saveCart();
+      updateCartCount();
+      alert('Added to cart!');
+    });
+
+    // Save cart to localStorage or Firestore if logged in
+    function saveCart() {
+      if (currentUser) {
+        db.collection('carts').doc(currentUser.uid).set({ items: cart });
+      } else {
+        localStorage.setItem('cart', JSON.stringify(cart));
+      }
+    }
+
+    // Load cart from localStorage or Firestore
+    async function loadCart() {
+      if (currentUser) {
+        const doc = await db.collection('carts').doc(currentUser.uid).get();
+        if (doc.exists) {
+          cart = doc.data().items || {};
+        } else {
+          cart = {};
+        }
+      } else {
+        const localCart = localStorage.getItem('cart');
+        cart = localCart ? JSON.parse(localCart) : {};
+      }
+      updateCartCount();
+    }
+
+    // Update cart count badge
+    function updateCartCount() {
+      const count = Object.values(cart).reduce((acc, item) => acc + item.quantity, 0);
+      cartCount.textContent = count;
+      if (count === 0) {
+        cartCount.classList.add('hidden');
+      } else {
+        cartCount.classList.remove('hidden');
+      }
+    }
+
+    // Open cart page
+    function openCart() {
+      homeSection.classList.add('hidden');
+      productsSection.classList.add('hidden');
+      productDetailSection.classList.add('hidden');
+      checkoutSection.classList.add('hidden');
+      adminPanelSection.classList.add('hidden');
+      cartSection.classList.remove('hidden');
+      renderCartItems();
+    }
+
+    // Render cart items
+    function renderCartItems() {
+      cartItemsContainer.innerHTML = '';
+      if (Object.keys(cart).length === 0) {
+        const emptyMsg = document.createElement('p');
+        emptyMsg.className = 'text-gray-400';
+        emptyMsg.textContent = 'Your cart is empty.';
+        cartItemsContainer.appendChild(emptyMsg);
+        cartTotal.textContent = 'Total: $0.00';
+        checkoutButton.disabled = true;
+        checkoutButton.classList.add('opacity-50', 'cursor-not-allowed');
+        return;
+      }
+      checkoutButton.disabled = false;
+      checkoutButton.classList.remove('opacity-50', 'cursor-not-allowed');
+
+      let total = 0;
+      Object.entries(cart).forEach(([key, item]) => {
+        total += item.price * item.quantity;
+
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'flex items-center space-x-4';
+
+        const img = document.createElement('img');
+        img.src = item.image;
+        img.alt = item.name + ' product image';
+        img.className = 'w-24 h-24 object-cover rounded';
+
+        const info = document.createElement('div');
+        info.className = 'flex-1';
+
+        const name = document.createElement('h4');
+        name.className = 'font-semibold text-lg text-gray-200';
+        name.textContent = item.name;
+
+        const options = document.createElement('p');
+        options.className = 'text-gray-400 text-sm';
+        options.textContent = `Size: ${item.size} | Color: ${item.color}`;
+
+        const price = document.createElement('p');
+        price.className = 'text-indigo-400 font-semibold';
+        price.textContent = `$${item.price.toFixed(2)}`;
+
+        info.appendChild(name);
+        info.appendChild(options);
+        info.appendChild(price);
+
+        const quantityWrapper = document.createElement('div');
+        quantityWrapper.className = 'flex items-center space-x-2';
+
+        const minusBtn = document.createElement('button');
+        minusBtn.className = 'bg-gray-700 hover:bg-gray-600 rounded px-2 py-1 focus:outline-none';
+        minusBtn.setAttribute('aria-label', `Decrease quantity of ${item.name}`);
+        minusBtn.innerHTML = '<i class="fas fa-minus"></i>';
+        minusBtn.addEventListener('click', () => {
+          if (item.quantity > 1) {
+            item.quantity--;
+            saveCart();
+            renderCartItems();
+            updateCartCount();
+          }
+        });
+
+        const qtyInput = document.createElement('input');
+        qtyInput.type = 'number';
+        qtyInput.min = '1';
+        qtyInput.value = item.quantity;
+        qtyInput.className = 'w-12 text-center border border-gray-700 rounded p-1 bg-gray-800 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500';
+        qtyInput.setAttribute('aria-label', `Quantity of ${item.name}`);
+        qtyInput.addEventListener('change', () => {
+          let val = parseInt(qtyInput.value);
+          if (isNaN(val) || val < 1) val = 1;
+          item.quantity = val;
+          saveCart();
+          renderCartItems();
+          updateCartCount();
+        });
+
+        const plusBtn = document.createElement('button');
+        plusBtn.className = 'bg-gray-700 hover:bg-gray-600 rounded px-2 py-1 focus:outline-none';
+        plusBtn.setAttribute('aria-label', `Increase quantity of ${item.name}`);
+        plusBtn.innerHTML = '<i class="fas fa-plus"></i>';
+        plusBtn.addEventListener('click', () => {
+          item.quantity++;
+          saveCart();
+          renderCartItems();
+          updateCartCount();
+        });
+
+        quantityWrapper.appendChild(minusBtn);
+        quantityWrapper.appendChild(qtyInput);
+        quantityWrapper.appendChild(plusBtn);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'text-red-600 hover:text-red-800 focus:outline-none';
+        removeBtn.setAttribute('aria-label', `Remove ${item.name} from cart`);
+        removeBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+        removeBtn.addEventListener('click', () => {
+          delete cart[key];
+          saveCart();
+          renderCartItems();
+          updateCartCount();
+        });
+
+        itemDiv.appendChild(img);
+        itemDiv.appendChild(info);
+        itemDiv.appendChild(quantityWrapper);
+        itemDiv.appendChild(removeBtn);
+
+        cartItemsContainer.appendChild(itemDiv);
+      });
+      cartTotal.textContent = `Total: $${total.toFixed(2)}`;
+    }
+
+    // Checkout button click
+    checkoutButton.addEventListener('click', () => {
+      if (Object.keys(cart).length === 0) {
+        alert('Your cart is empty.');
+        return;
+      }
+      homeSection.classList.add('hidden');
+      productsSection.classList.add('hidden');
+      productDetailSection.classList.add('hidden');
+      cartSection.classList.add('hidden');
+      adminPanelSection.classList.add('hidden');
+      checkoutSection.classList.remove('hidden');
+      populateCheckoutForm();
+    });
+
+    // Populate checkout form with user info if logged in
+    function populateCheckoutForm() {
+      if (!currentUser) return;
+      const user = auth.currentUser;
+      if (!user) return;
+      checkoutForm.email.value = user.email || '';
+      // Could load more user info from Firestore if stored
+    }
+
+    // Initialize Stripe Elements
+    function initializeStripe() {
+      stripe = Stripe('YOUR_STRIPE_PUBLISHABLE_KEY'); // Replace with your Stripe publishable key
+      const elements = stripe.elements();
+      cardElement = elements.create('card');
+      cardElement.mount('#card-element');
+      cardErrors = document.getElementById('card-errors');
+      cardElement.on('change', event => {
+        if (event.error) {
+          cardErrors.textContent = event.error.message;
+        } else {
+          cardErrors.textContent = '';
+        }
+      });
+    }
+
+    // Checkout form submit
+    checkoutForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      if (!stripe || !cardElement) {
+        alert('Payment system not initialized.');
+        return;
+      }
+      const formData = new FormData(checkoutForm);
+      const userDetails = {
+        firstName: formData.get('firstName'),
+        lastName: formData.get('lastName'),
+        email: formData.get('email'),
+        address: formData.get('address'),
+        city: formData.get('city'),
+        state: formData.get('state'),
+        zip: formData.get('zip'),
+        country: formData.get('country'),
+        paymentMethod: formData.get('paymentMethod'),
+      };
+
+      if (!userDetails.firstName || !userDetails.lastName || !userDetails.email || !userDetails.address || !userDetails.city || !userDetails.state || !userDetails.zip || !userDetails.country) {
+        alert('Please fill in all required fields.');
+        return;
+      }
+
+      if (userDetails.paymentMethod === 'card') {
+        // Create payment method with Stripe
+        const { paymentMethod, error } = await stripe.createPaymentMethod({
+          type: 'card',
+          card: cardElement,
+          billing_details: {
+            name: `${userDetails.firstName} ${userDetails.lastName}`,
+            email: userDetails.email,
+            address: {
+              line1: userDetails.address,
+              city: userDetails.city,
+              state: userDetails.state,
+              postal_code: userDetails.zip,
+              country: userDetails.country,
+            },
+          },
+        });
+        if (error) {
+          cardErrors.textContent = error.message;
+          return;
+        }
+        cardErrors.textContent = '';
+
+        // Here you would send paymentMethod.id and order details to your backend to create a payment intent and confirm payment
+        // For demo, we simulate success:
+        alert('Payment successful! Thank you for your purchase.');
+        clearCart();
+        checkoutSection.classList.add('hidden');
+        homeSection.classList.remove('hidden');
+      } else if (userDetails.paymentMethod === 'paypal') {
+        alert('PayPal payment method selected. This demo does not support PayPal integration.');
+      }
+    });
+
+    // Clear cart after successful purchase
+    function clearCart() {
+      cart = {};
+      saveCart();
+      updateCartCount();
+    }
+
+    // Authentication handlers
+    loginForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+        closeAuthModal();
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+
+    signupForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const email = document.getElementById('signup-email').value.trim();
+      const password = document.getElementById('signup-password').value;
+      try {
+        await auth.createUserWithEmailAndPassword(email, password);
+        closeAuthModal();
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+
+    resetForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const email = document.getElementById('reset-email').value.trim();
+      try {
+        await auth.sendPasswordResetEmail(email);
+        alert('Password reset email sent.');
+        showLoginForm();
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+
+    // Listen for auth state changes
+    auth.onAuthStateChanged(async user => {
+      currentUser = user;
+      updateAuthButtons();
+      if (user) {
+        // Check if user is admin (for demo, check email)
+        isAdmin = user.email === 'admin@clothify.com';
+        if (isAdmin) {
+          adminPanelSection.classList.remove('hidden');
+        } else {
+          adminPanelSection.classList.add('hidden');
+        }
+        await loadCart();
+      } else {
+        isAdmin = false;
+        adminPanelSection.classList.add('hidden');
+        await loadCart();
+      }
+      renderAdminProductList();
+    });
+
+    // Cart icon click opens cart page
+    document.querySelectorAll('a[href="#cart"]').forEach(el => {
+      el.addEventListener('click', e => {
+        e.preventDefault();
+        openCart();
+        if (mobileMenu) mobileMenu.classList.add('hidden');
+      });
+    });
+
+    // Admin panel product list render
+    function renderAdminProductList() {
+      if (!isAdmin) {
+        adminProductList.innerHTML = '';
+        return;
+      }
+      adminProductList.innerHTML = '';
+      if (products.length === 0) {
+        adminProductList.textContent = 'No products available.';
+        return;
+      }
+      products.forEach(product => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between border border-gray-700 rounded p-3 cursor-pointer hover:bg-indigo-900';
+        div.tabIndex = 0;
+        div.setAttribute('role', 'button');
+        div.setAttribute('aria-pressed', 'false');
+        div.addEventListener('click', () => {
+          fillAdminForm(product);
+        });
+        div.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            fillAdminForm(product);
+          }
+        });
+
+        const name = document.createElement('span');
+        name.className = 'font-semibold text-gray-200';
+        name.textContent = product.name;
+
+        const price = document.createElement('span');
+        price.className = 'text-indigo-400 font-semibold';
+        price.textContent = `$${product.price.toFixed(2)}`;
+
+        div.appendChild(name);
+        div.appendChild(price);
+        adminProductList.appendChild(div);
+      });
+    }
+
+    // Fill admin form for editing
+    function fillAdminForm(product) {
+      adminProductIdInput.value = product.id;
+      adminProductNameInput.value = product.name;
+      adminProductDescriptionInput.value = product.description;
+      adminProductPriceInput.value = product.price;
+      adminProductCategorySelect.value = product.category;
+      adminProductSizesInput.value = product.sizes ? product.sizes.join(', ') : '';
+      adminProductColorsInput.value = product.colors ? product.colors.join(', ') : '';
+      adminProductImagesInput.value = product.images ? product.images.join(', ') : '';
+      adminProductDeleteBtn.classList.remove('hidden');
+      window.scrollTo({ top: adminPanelSection.offsetTop, behavior: 'smooth' });
+    }
+
+    // Admin form submit (add/edit product)
+    adminProductForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      if (!isAdmin) return alert('Unauthorized');
+
+      const id = adminProductIdInput.value;
+      const name = adminProductNameInput.value.trim();
+      const description = adminProductDescriptionInput.value.trim();
+      const price = parseFloat(adminProductPriceInput.value);
+      const category = adminProductCategorySelect.value;
+      const sizes = adminProductSizesInput.value.split(',').map(s => s.trim()).filter(s => s);
+      const colors = adminProductColorsInput.value.split(',').map(c => c.trim()).filter(c => c);
+      const images = adminProductImagesInput.value.split(',').map(i => i.trim()).filter(i => i);
+
+      if (!name || !description || isNaN(price) || !category) {
+        alert('Please fill in all required fields correctly.');
+        return;
+      }
+
+      const productData = {
+        name,
+        description,
+        price,
+        category,
+        sizes,
+        colors,
+        images,
+        featured: false,
+      };
+
+      try {
+        if (id) {
+          await db.collection('products').doc(id).update(productData);
+          alert('Product updated.');
+        } else {
+          await db.collection('products').add(productData);
+          alert('Product added.');
+        }
+        adminProductForm.reset();
+        adminProductIdInput.value = '';
+        adminProductDeleteBtn.classList.add('hidden');
+        await loadProducts();
+      } catch (error) {
+        alert('Error saving product: ' + error.message);
+      }
+    });
+
+    // Admin delete product
+    adminProductDeleteBtn.addEventListener('click', async () => {
+      if (!isAdmin) return alert('Unauthorized');
+      const id = adminProductIdInput.value;
+      if (!id) return;
+      if (!confirm('Are you sure you want to delete this product?')) return;
+      try {
+        await db.collection('products').doc(id).delete();
+        alert('Product deleted.');
+        adminProductForm.reset();
+        adminProductIdInput.value = '';
+        adminProductDeleteBtn.classList.add('hidden');
+        await loadProducts();
+      } catch (error) {
+        alert('Error deleting product: ' + error.message);
+      }
+    });
+
+    // Initialize app
+    async function init() {
+      await loadProducts();
+      await loadCart();
+      updateAuthButtons();
+      initializeStripe();
+    }
+
+    init();
+  </script>
+ </body>
+</html>
